@@ -7,6 +7,7 @@ import (
 	"go/ast"
 	"go/format"
 	"go/parser"
+	"go/printer"
 	"go/token"
 	"golang.org/x/tools/go/ast/astutil"
 	"os"
@@ -22,6 +23,7 @@ import (
 // 1) make it readable
 // 2) optimize the code (?)
 // 3) add wrapped types for methods
+// 4) figure out what causes "image" package errors
 
 const pkgLink = "https://golang.org/pkg/"
 
@@ -43,26 +45,25 @@ var currentDir string
 var buildins = []string{
 	"builtin",
 	"unsafe",
+	"syscall",
+	"js",
+	"maphash",
+	"syslog",
+	"testing",
 }
 
 // not supported packages (yet)
 var filter = []string{
-	"x509",
-	"elf",
-	"plan9obj",
-	"ast",
-	"types",
 	"image",
-	"big",
-	"net",
-	"os",
-	"reflect",
-	"runtime",
-	"syscall",
-	"js",
-	"testing",
-	"parse",
-	"time",
+}
+
+var versionFilter = []string {
+	"tls", // 1.14
+	"json", // 1.14
+	"dwarf", // 1.14
+	"textproto", // 1.14
+	"strconv", // 1.14
+	"http", // 1.14
 }
 
 func main() {
@@ -157,7 +158,7 @@ func main() {
 	wg.Wait()
 }
 
-var funcExpr = regexp.MustCompile(`func\s(\((.*?)\))?\s?([A-z]+)\(.*?\) ([A-z,() *]*)?`)
+var funcExpr = regexp.MustCompile(`func\s(\((.*?)\))?\s?([A-z]+)\(.*?\) ([A-z,() \[\]*]*)?`)
 
 type function struct {
 	isMethod bool
@@ -173,7 +174,10 @@ type function struct {
 func generate(funcIn []string, p pkg, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	fmt.Println(p.name)
+	pimp := p.path[:len(p.path)-1]
+
+	fmt.Println(pimp, "in process...")
+	defer fmt.Println(pimp, "just got generated.")
 	
 	var result []byte
 	var src = []byte("package " + p.name + "\n")
@@ -196,6 +200,9 @@ func generate(funcIn []string, p pkg, wg *sync.WaitGroup) {
 			sreceiver := strings.Split(matches[2], " ")
 			if len(sreceiver) == 1 {
 				fn.receiver = "receiverV"
+
+				receiver = fn.receiver + " " + receiver
+
 				fn.receiverType = sreceiver[0]
 			} else {
 				fn.receiver = sreceiver[0]
@@ -214,6 +221,7 @@ func generate(funcIn []string, p pkg, wg *sync.WaitGroup) {
 			}
 
 			fn.signatureWithReceiver = strings.Replace(fn.signature,"(", receiver, 1)
+
 			fn.signatureWithReceiver = strings.Replace(fn.signatureWithReceiver, fn.originalName, fn.name, 1)
 
 			src = append(src, fn.signatureWithReceiver...)
@@ -225,10 +233,6 @@ func generate(funcIn []string, p pkg, wg *sync.WaitGroup) {
 		}
 
 		src = append(src, '\n')
-
-		if matches[4] != "" {
-			fn.isReturns = true
-		}
 
 		funcs[fn.name] = &fn
 	}
@@ -255,7 +259,8 @@ func generate(funcIn []string, p pkg, wg *sync.WaitGroup) {
 
 		var params []string
 		for _, f := range fn.Type.Params.List {
-			lookupType(nil, func(cur int, typ, pkg string, ext bool) {
+			cursor := 0
+			lookupType(&cursor, func(cur int, typ, pkg string, ext bool) {
 				if ext {
 					packages[pkg] = struct{}{}
 				}
@@ -267,14 +272,22 @@ func generate(funcIn []string, p pkg, wg *sync.WaitGroup) {
 			}
 		}
 
+		fun, ok := funcs[fname]
+		if !ok {
+			fun = new(function)
+		}
+
 		if fn.Type.Results == nil {
 			parameters[fname] = params
 
 			continue
 		}
 
+		fun.isReturns = true
+
 		for _, f := range fn.Type.Results.List {
-			lookupType(nil, func(cur int, typ, pkg string, ext bool) {
+			cursor := 0
+			lookupType(&cursor, func(cur int, typ, pkg string, ext bool) {
 				if ext {
 					packages[pkg] = struct{}{}
 				}
@@ -300,7 +313,6 @@ func generate(funcIn []string, p pkg, wg *sync.WaitGroup) {
 	result = []byte(fmt.Sprintf(pkgTemplate,
 		time.Now().Format(time.UnixDate),
 		p.name,
-		p.path[:len(p.path)-1],
 		strings.Join(funcOut, "\n"),
 	))
 
@@ -329,6 +341,7 @@ func generate(funcIn []string, p pkg, wg *sync.WaitGroup) {
 		astutil.AddNamedImport(fset, f, "_", "unsafe")
 	}
 
+	self := false
 	n := astutil.Apply(f, nil, func(c *astutil.Cursor) bool {
 		if fn, ok := c.Node().(*ast.FuncType); ok {
 			if fn.Params == nil {
@@ -339,9 +352,11 @@ func generate(funcIn []string, p pkg, wg *sync.WaitGroup) {
 				var ftyp []byte
 				buildType(&ftyp, prm.Type)
 
-				cursor := -1
+				cursor := 0
 				lookupType(&cursor, func(cur int, typ, pkg string, ext bool) {
 					if !ext && isUpper(typ) {
+						self = true
+
 						var buf []byte
 
 						buf = append(buf, ftyp[:cur]...)
@@ -365,9 +380,11 @@ func generate(funcIn []string, p pkg, wg *sync.WaitGroup) {
 				var ftyp []byte
 				buildType(&ftyp, rsts.Type)
 
-				cursor := -1
+				cursor := 0
 				lookupType(&cursor, func(cur int, typ, pkg string, ext bool) {
 					if !ext && isUpper(typ) {
+						self = true
+
 						var buf []byte
 
 						buf = append(buf, ftyp[:cur]...)
@@ -381,18 +398,47 @@ func generate(funcIn []string, p pkg, wg *sync.WaitGroup) {
 						fn.Results.List[i].Type = ast.NewIdent(string(buf))
 					}
 				}, rsts.Type)
+
+				for c := len(rsts.Names)-1; c > 0; c-- {
+					ftyp = append(ftyp, ", "...)
+					ftyp = append(ftyp, ftyp...)
+				}
+
+				if len(rsts.Names) > 1 {
+					fn.Results.List[i].Type = ast.NewIdent(string(ftyp))
+				}
+
+
+				fn.Results.List[i].Names = nil
 			}
 		}
 
 		return true
 	})
 
+	if self {
+		astutil.AddImport(fset, f, pimp)
+	} else {
+		// for linkname
+		astutil.AddNamedImport(fset, f, "_", pimp)
+	}
+
 	var buf bytes.Buffer
+
 	if err := format.Node(&buf, fset, n); err != nil {
-		//fmt.Println(string(result))
+		// for debugging, Fprint does not complain much, except in case of "image" package
+		config := printer.Config{Mode: printer.UseSpaces | printer.TabIndent, Tabwidth: 8}
+		err2 := config.Fprint(&buf, fset, n)
+		if err2 != nil {
+
+			panic(p.path + err2.Error())
+		}
+
+		fmt.Println(buf.String())
 
 		panic(err)
 	}
+
 
 	path := currentDir + "/" + p.path
 	err = os.MkdirAll(path, os.ModePerm)
@@ -430,29 +476,37 @@ func buildMethodSignature(pkg string, fn *function, params []string) string {
 			break
 		}
 
-		fallthrough
+		args = strings.Join(params, ", ")
 	default:
 		if fn.isMethod {
 			params = params[1:]
 		}
 
 		args = strings.Join(params, ", ")
-		args = args[:len(args)-2]
-	}
-
-	ret := ""
-	if fn.isReturns {
-		ret = "return "
+		if args[len(args)-2:] == ", " {
+			args = args[:len(args)-2]
+		}
 	}
 
 	return buildLinkname(lname, pkg, "sub_" + lname, false) +
-		fmt.Sprintf(methodTemplate,
-			strings.Replace(fn.signatureWithReceiver, fn.name, lname, 1),
-			ret + fn.receiver,
-			fn.originalName,
-			args,
-		) +
+		buildMethodWrapper(fn, lname, args) +
 		buildLinkname(fn.name, pkg, "sub_" + lname, true) + "\n" + fn.signatureWithReceiver
+}
+
+func buildMethodWrapper(fn *function, lname, args string) string {
+	ret := ""
+	if fn.isReturns {
+		ret = "return " + fn.receiver
+	} else {
+		ret = fn.receiver
+	}
+
+	return fmt.Sprintf(methodTemplate,
+		strings.Replace(fn.signatureWithReceiver, fn.name, lname, 1),
+		ret,
+		fn.originalName,
+		args,
+	)
 }
 
 func buildLinkname(name, path, simbol string, noescape bool) string {
@@ -477,59 +531,87 @@ const pkgTemplate = `// This file has automatically been generated on %s.
 // DO NOT EDIT.
 package %s
 
-import "%s"
-
 %s
 `
 
 func lookupType(cur *int, visit func(cur int, typ, pkg string, ext bool), expr ast.Expr) {
-	cursor := 0
-	if cur != nil {
-		*cur++
-
-		cursor = *cur
-	}
-
 	switch x := expr.(type) {
 	case *ast.ArrayType:
+		*cur += len("[")
+		if x.Len != nil {
+			lookupType(cur, visit, x.Len)
+		}
+		*cur += len("]")
 		lookupType(cur, visit, x.Elt)
 	case *ast.ChanType:
+		switch x.Dir {
+		case ast.SEND:
+			*cur += len("chan<- ")
+		case ast.RECV:
+			*cur += len("<-chan ")
+		default:
+			*cur += len("chan ")
+		}
+
 		lookupType(cur, visit, x.Value)
 	case *ast.FuncType:
-		if x.Params == nil {
+		*cur += len("func(")
+		calcFieldList(cur, visit, x.Params,", ")
+		*cur += len(")")
+
+		res := x.Results
+		n := res.NumFields()
+		if n == 0 {
 			return
 		}
-		for _, p := range x.Params.List {
-			lookupType(cur, visit, p.Type)
-		}
 
-		if x.Results == nil {
+		*cur += len(" ")
+		if n == 1 && len(res.List[0].Names) == 0 {
+			lookupType(cur, visit, res.List[0].Type)
+
 			return
 		}
 
-		for _, p := range x.Results.List {
-			lookupType(cur, visit, p.Type)
-		}
+		*cur += len("(")
+		calcFieldList(cur, visit, x.Results,", ")
+		*cur += len(")")
 	case *ast.StructType:
+		*cur += len("struct{")
 		if x.Fields == nil {
+			*cur += len("}")
+
 			return
 		}
 
-		for _, f := range x.Fields.List {
-			lookupType(cur, visit, f.Type)
-		}
+		calcFieldList(cur, visit, x.Fields,"; ")
+
+		*cur += len("}")
 	case *ast.MapType:
+		*cur += len("map[")
 		lookupType(cur, visit, x.Key)
+		*cur += len("]")
 		lookupType(cur, visit, x.Value)
+	case *ast.Ellipsis:
+		*cur += len( "...")
+		if x.Elt != nil {
+			lookupType(cur, visit, x.Elt)
+		}
 	case *ast.StarExpr:
+		*cur += len("*")
 		lookupType(cur, visit, x.X)
+	case *ast.InterfaceType:
+		*cur = len( "interface{}")
 	case *ast.SelectorExpr:
 		var pkg []byte
 		buildType(&pkg, x.X)
 
-		visit(cursor, x.Sel.Name, string(pkg), true)
+		visit(*cur, x.Sel.Name, string(pkg), true)
+
+		*cur += len(pkg) +  len(".") + len(x.Sel.Name)
 	case *ast.Ident:
-		visit(cursor, x.Name, "", false)
+		visit(*cur, x.Name, "", false)
+
+		*cur += len(x.Name)
 	}
 }
 
@@ -597,6 +679,11 @@ func buildType(buf *[]byte, expr ast.Expr) {
 		buildType(buf, x.X)
 		*buf = append(*buf,'.')
 		*buf = append(*buf, x.Sel.Name...)
+	case *ast.Ellipsis:
+		*buf = append(*buf, "..."...)
+		if x.Elt != nil {
+			buildType(buf, x.Elt)
+		}
 	case *ast.StarExpr:
 		*buf = append(*buf,'*')
 		buildType(buf, x.X)
@@ -624,6 +711,28 @@ func writeFieldList(buf *[]byte, fields *ast.FieldList, sep string) {
 		}
 
 		buildType(buf, f.Type)
+	}
+}
+
+func calcFieldList(cur *int, visit func(cur int, typ, pkg string, ext bool), fields *ast.FieldList, sep string) {
+	for i, f := range fields.List {
+		if i > 0 {
+			*cur = len(sep)
+		}
+
+		for i, name := range f.Names {
+			if i > 0 {
+				*cur = len(", ")
+			}
+
+			*cur = len(name.Name)
+		}
+
+		if len(f.Names) > 0 {
+			*cur = len( " ")
+		}
+
+		lookupType(cur, visit, f.Type)
 	}
 }
 
