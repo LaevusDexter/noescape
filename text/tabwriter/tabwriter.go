@@ -1,4 +1,4 @@
-// This file has automatically been generated on Wed Feb 26 02:10:16 +05 2020.
+// This file has automatically been generated on Wed Feb 26 15:50:54 +05 2020.
 // DO NOT EDIT.
 package tabwriter
 
@@ -8,18 +8,27 @@ import (
 	_ "unsafe"
 )
 
+//go:linkname writerwrite tabwriter.sub_writerwrite
+func writerwrite(b *tabwriter.Writer, buf []byte) (int, error) {
+	return b.Write(buf)
+}
+
+//go:linkname WriterWrite tabwriter.sub_writerwrite
+//go:noescape
+func WriterWrite(b *tabwriter.Writer, buf []byte) (int, error)
+
 //go:linkname NewWriter text/tabwriter.NewWriter
 //go:noescape
 func NewWriter(output io.Writer, minwidth, tabwidth, padding int, padchar byte, flags uint) *tabwriter.Writer
 
 //go:linkname writerflush tabwriter.sub_writerflush
-func writerflush(b *tabwriter.Writer) error {
+func writerflush(b *tabwriter.Writer,) error {
 	return b.Flush()
 }
 
 //go:linkname WriterFlush tabwriter.sub_writerflush
 //go:noescape
-func WriterFlush(b *tabwriter.Writer) error
+func WriterFlush(b *tabwriter.Writer,) error
 
 //go:linkname writerinit tabwriter.sub_writerinit
 func writerinit(b *tabwriter.Writer, output io.Writer, minwidth, tabwidth, padding int, padchar byte, flags uint) *tabwriter.Writer {
@@ -29,12 +38,3 @@ func writerinit(b *tabwriter.Writer, output io.Writer, minwidth, tabwidth, paddi
 //go:linkname WriterInit tabwriter.sub_writerinit
 //go:noescape
 func WriterInit(b *tabwriter.Writer, output io.Writer, minwidth, tabwidth, padding int, padchar byte, flags uint) *tabwriter.Writer
-
-//go:linkname writerwrite tabwriter.sub_writerwrite
-func writerwrite(b *tabwriter.Writer, buf []byte) (int, error) {
-	return b.Write(buf)
-}
-
-//go:linkname WriterWrite tabwriter.sub_writerwrite
-//go:noescape
-func WriterWrite(b *tabwriter.Writer, buf []byte) (int, error)

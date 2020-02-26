@@ -1,4 +1,4 @@
-// This file has automatically been generated on Wed Feb 26 02:09:45 +05 2020.
+// This file has automatically been generated on Wed Feb 26 15:50:23 +05 2020.
 // DO NOT EDIT.
 package rc4
 
@@ -12,10 +12,10 @@ import (
 func NewCipher(key []byte) (*rc4.Cipher, error)
 
 //go:linkname keysizeerrorerror rc4.sub_keysizeerrorerror
-func keysizeerrorerror(k rc4.KeySizeError) string {
+func keysizeerrorerror(k rc4.KeySizeError,) string {
 	return k.Error()
 }
 
 //go:linkname KeySizeErrorError rc4.sub_keysizeerrorerror
 //go:noescape
-func KeySizeErrorError(k rc4.KeySizeError) string
+func KeySizeErrorError(k rc4.KeySizeError,) string

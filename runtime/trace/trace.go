@@ -1,4 +1,4 @@
-// This file has automatically been generated on Wed Feb 26 02:10:13 +05 2020.
+// This file has automatically been generated on Wed Feb 26 15:50:51 +05 2020.
 // DO NOT EDIT.
 package trace
 
@@ -23,4 +23,4 @@ func StartRegion(ctx context.Context, regionType string) *trace.Region
 
 //go:linkname NewTask runtime/trace.NewTask
 //go:noescape
-func NewTask(pctx context.Context, taskType string) (context.Context, *trace.Task)
+func NewTask(pctx context.Context, taskType string) (context.Context, *trace.Task,)

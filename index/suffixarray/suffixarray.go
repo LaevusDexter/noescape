@@ -1,4 +1,4 @@
-// This file has automatically been generated on Wed Feb 26 02:10:01 +05 2020.
+// This file has automatically been generated on Wed Feb 26 15:50:39 +05 2020.
 // DO NOT EDIT.
 package suffixarray
 
@@ -8,6 +8,37 @@ import (
 	"regexp"
 	_ "unsafe"
 )
+
+//go:linkname indexwrite suffixarray.sub_indexwrite
+func indexwrite(x *suffixarray.Index, w io.Writer) error {
+	return x.Write(w)
+}
+
+//go:linkname IndexWrite suffixarray.sub_indexwrite
+//go:noescape
+func IndexWrite(x *suffixarray.Index, w io.Writer) error
+
+//go:linkname New index/suffixarray.New
+//go:noescape
+func New(data []byte) *suffixarray.Index
+
+//go:linkname indexbytes suffixarray.sub_indexbytes
+func indexbytes(x *suffixarray.Index,) []byte {
+	return x.Bytes()
+}
+
+//go:linkname IndexBytes suffixarray.sub_indexbytes
+//go:noescape
+func IndexBytes(x *suffixarray.Index,) []byte
+
+//go:linkname indexfindallindex suffixarray.sub_indexfindallindex
+func indexfindallindex(x *suffixarray.Index, r *regexp.Regexp, n int) [][]int {
+	return x.FindAllIndex(r, n)
+}
+
+//go:linkname IndexFindAllIndex suffixarray.sub_indexfindallindex
+//go:noescape
+func IndexFindAllIndex(x *suffixarray.Index, r *regexp.Regexp, n int) [][]int
 
 //go:linkname indexlookup suffixarray.sub_indexlookup
 func indexlookup(x *suffixarray.Index, s []byte, n int) []int {
@@ -26,34 +57,3 @@ func indexread(x *suffixarray.Index, r io.Reader) error {
 //go:linkname IndexRead suffixarray.sub_indexread
 //go:noescape
 func IndexRead(x *suffixarray.Index, r io.Reader) error
-
-//go:linkname indexwrite suffixarray.sub_indexwrite
-func indexwrite(x *suffixarray.Index, w io.Writer) error {
-	return x.Write(w)
-}
-
-//go:linkname IndexWrite suffixarray.sub_indexwrite
-//go:noescape
-func IndexWrite(x *suffixarray.Index, w io.Writer) error
-
-//go:linkname New index/suffixarray.New
-//go:noescape
-func New(data []byte) *suffixarray.Index
-
-//go:linkname indexbytes suffixarray.sub_indexbytes
-func indexbytes(x *suffixarray.Index) []byte {
-	return x.Bytes()
-}
-
-//go:linkname IndexBytes suffixarray.sub_indexbytes
-//go:noescape
-func IndexBytes(x *suffixarray.Index) []byte
-
-//go:linkname indexfindallindex suffixarray.sub_indexfindallindex
-func indexfindallindex(x *suffixarray.Index, r *regexp.Regexp, n int) [][]int {
-	return x.FindAllIndex(r, n)
-}
-
-//go:linkname IndexFindAllIndex suffixarray.sub_indexfindallindex
-//go:noescape
-func IndexFindAllIndex(x *suffixarray.Index, r *regexp.Regexp, n int) [][]int

@@ -1,4 +1,4 @@
-// This file has automatically been generated on Wed Feb 26 02:09:59 +05 2020.
+// This file has automatically been generated on Wed Feb 26 15:50:36 +05 2020.
 // DO NOT EDIT.
 package crc64
 
@@ -10,11 +10,11 @@ import (
 
 //go:linkname Checksum hash/crc64.Checksum
 //go:noescape
-func Checksum(data []byte, tab *crc64.Table) uint64
+func Checksum(data []byte, tab *crc64.Table,) uint64
 
 //go:linkname New hash/crc64.New
 //go:noescape
-func New(tab *crc64.Table) hash.Hash64
+func New(tab *crc64.Table,) hash.Hash64
 
 //go:linkname Update hash/crc64.Update
 //go:noescape

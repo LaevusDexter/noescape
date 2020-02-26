@@ -1,4 +1,4 @@
-// This file has automatically been generated on Wed Feb 26 02:09:56 +05 2020.
+// This file has automatically been generated on Wed Feb 26 15:50:33 +05 2020.
 // DO NOT EDIT.
 package doc
 
@@ -23,7 +23,7 @@ func Examples(testFiles ...*ast.File) []*doc.Example
 
 //go:linkname New go/doc.New
 //go:noescape
-func New(pkg *ast.Package, importPath string, mode doc.Mode) *doc.Package
+func New(pkg *ast.Package, importPath string, mode doc.Mode,) *doc.Package
 
 //go:linkname NewFromFiles go/doc.NewFromFiles
 //go:noescape

@@ -1,4 +1,4 @@
-// This file has automatically been generated on Wed Feb 26 02:09:44 +05 2020.
+// This file has automatically been generated on Wed Feb 26 15:50:21 +05 2020.
 // DO NOT EDIT.
 package des
 
@@ -17,10 +17,10 @@ func NewCipher(key []byte) (cipher.Block, error)
 func NewTripleDESCipher(key []byte) (cipher.Block, error)
 
 //go:linkname keysizeerrorerror des.sub_keysizeerrorerror
-func keysizeerrorerror(k des.KeySizeError) string {
+func keysizeerrorerror(k des.KeySizeError,) string {
 	return k.Error()
 }
 
 //go:linkname KeySizeErrorError des.sub_keysizeerrorerror
 //go:noescape
-func KeySizeErrorError(k des.KeySizeError) string
+func KeySizeErrorError(k des.KeySizeError,) string

@@ -1,4 +1,4 @@
-// This file has automatically been generated on Wed Feb 26 02:09:59 +05 2020.
+// This file has automatically been generated on Wed Feb 26 15:50:36 +05 2020.
 // DO NOT EDIT.
 package maphash
 
@@ -6,33 +6,6 @@ import (
 	"hash/maphash"
 	_ "unsafe"
 )
-
-//go:linkname hashsize maphash.sub_hashsize
-func hashsize(h *maphash.Hash) int {
-	return h.Size()
-}
-
-//go:linkname HashSize maphash.sub_hashsize
-//go:noescape
-func HashSize(h *maphash.Hash) int
-
-//go:linkname hashsum maphash.sub_hashsum
-func hashsum(h *maphash.Hash, b []byte) []byte {
-	return h.Sum(b)
-}
-
-//go:linkname HashSum maphash.sub_hashsum
-//go:noescape
-func HashSum(h *maphash.Hash, b []byte) []byte
-
-//go:linkname hashwrite maphash.sub_hashwrite
-func hashwrite(h *maphash.Hash, b []byte) (int, error) {
-	return h.Write(b)
-}
-
-//go:linkname HashWrite maphash.sub_hashwrite
-//go:noescape
-func HashWrite(h *maphash.Hash, b []byte) (int, error)
 
 //go:linkname hashwritebyte maphash.sub_hashwritebyte
 func hashwritebyte(h *maphash.Hash, b byte) error {
@@ -57,19 +30,46 @@ func HashWriteString(h *maphash.Hash, s string) (int, error)
 func MakeSeed() maphash.Seed
 
 //go:linkname hashblocksize maphash.sub_hashblocksize
-func hashblocksize(h *maphash.Hash) int {
+func hashblocksize(h *maphash.Hash,) int {
 	return h.BlockSize()
 }
 
 //go:linkname HashBlockSize maphash.sub_hashblocksize
 //go:noescape
-func HashBlockSize(h *maphash.Hash) int
+func HashBlockSize(h *maphash.Hash,) int
 
 //go:linkname hashseed maphash.sub_hashseed
-func hashseed(h *maphash.Hash) maphash.Seed {
+func hashseed(h *maphash.Hash,) maphash.Seed {
 	return h.Seed()
 }
 
 //go:linkname HashSeed maphash.sub_hashseed
 //go:noescape
-func HashSeed(h *maphash.Hash) maphash.Seed
+func HashSeed(h *maphash.Hash,) maphash.Seed
+
+//go:linkname hashsize maphash.sub_hashsize
+func hashsize(h *maphash.Hash,) int {
+	return h.Size()
+}
+
+//go:linkname HashSize maphash.sub_hashsize
+//go:noescape
+func HashSize(h *maphash.Hash,) int
+
+//go:linkname hashsum maphash.sub_hashsum
+func hashsum(h *maphash.Hash, b []byte) []byte {
+	return h.Sum(b)
+}
+
+//go:linkname HashSum maphash.sub_hashsum
+//go:noescape
+func HashSum(h *maphash.Hash, b []byte) []byte
+
+//go:linkname hashwrite maphash.sub_hashwrite
+func hashwrite(h *maphash.Hash, b []byte) (int, error) {
+	return h.Write(b)
+}
+
+//go:linkname HashWrite maphash.sub_hashwrite
+//go:noescape
+func HashWrite(h *maphash.Hash, b []byte) (int, error)

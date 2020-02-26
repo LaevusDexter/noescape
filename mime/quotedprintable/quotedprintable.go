@@ -1,4 +1,4 @@
-// This file has automatically been generated on Wed Feb 26 02:10:04 +05 2020.
+// This file has automatically been generated on Wed Feb 26 15:50:42 +05 2020.
 // DO NOT EDIT.
 package quotedprintable
 
@@ -26,13 +26,13 @@ func ReaderRead(r *quotedprintable.Reader, p []byte) (int, error)
 func NewWriter(w io.Writer) *quotedprintable.Writer
 
 //go:linkname writerclose quotedprintable.sub_writerclose
-func writerclose(w *quotedprintable.Writer) error {
+func writerclose(w *quotedprintable.Writer,) error {
 	return w.Close()
 }
 
 //go:linkname WriterClose quotedprintable.sub_writerclose
 //go:noescape
-func WriterClose(w *quotedprintable.Writer) error
+func WriterClose(w *quotedprintable.Writer,) error
 
 //go:linkname writerwrite quotedprintable.sub_writerwrite
 func writerwrite(w *quotedprintable.Writer, p []byte) (int, error) {

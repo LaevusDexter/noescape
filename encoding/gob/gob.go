@@ -1,4 +1,4 @@
-// This file has automatically been generated on Wed Feb 26 02:09:52 +05 2020.
+// This file has automatically been generated on Wed Feb 26 15:50:29 +05 2020.
 // DO NOT EDIT.
 package gob
 
@@ -8,24 +8,6 @@ import (
 	"reflect"
 	_ "unsafe"
 )
-
-//go:linkname encoderencode gob.sub_encoderencode
-func encoderencode(enc *gob.Encoder, e interface{}) error {
-	return enc.Encode(e)
-}
-
-//go:linkname EncoderEncode gob.sub_encoderencode
-//go:noescape
-func EncoderEncode(enc *gob.Encoder, e interface{}) error
-
-//go:linkname encoderencodevalue gob.sub_encoderencodevalue
-func encoderencodevalue(enc *gob.Encoder, value reflect.Value) error {
-	return enc.EncodeValue(value)
-}
-
-//go:linkname EncoderEncodeValue gob.sub_encoderencodevalue
-//go:noescape
-func EncoderEncodeValue(enc *gob.Encoder, value reflect.Value) error
 
 //go:linkname NewDecoder encoding/gob.NewDecoder
 //go:noescape
@@ -52,3 +34,21 @@ func DecoderDecodeValue(dec *gob.Decoder, v reflect.Value) error
 //go:linkname NewEncoder encoding/gob.NewEncoder
 //go:noescape
 func NewEncoder(w io.Writer) *gob.Encoder
+
+//go:linkname encoderencode gob.sub_encoderencode
+func encoderencode(enc *gob.Encoder, e interface{}) error {
+	return enc.Encode(e)
+}
+
+//go:linkname EncoderEncode gob.sub_encoderencode
+//go:noescape
+func EncoderEncode(enc *gob.Encoder, e interface{}) error
+
+//go:linkname encoderencodevalue gob.sub_encoderencodevalue
+func encoderencodevalue(enc *gob.Encoder, value reflect.Value) error {
+	return enc.EncodeValue(value)
+}
+
+//go:linkname EncoderEncodeValue gob.sub_encoderencodevalue
+//go:noescape
+func EncoderEncodeValue(enc *gob.Encoder, value reflect.Value) error

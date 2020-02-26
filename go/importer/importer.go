@@ -1,4 +1,4 @@
-// This file has automatically been generated on Wed Feb 26 02:09:56 +05 2020.
+// This file has automatically been generated on Wed Feb 26 15:50:34 +05 2020.
 // DO NOT EDIT.
 package importer
 
@@ -15,8 +15,8 @@ func Default() types.Importer
 
 //go:linkname For go/importer.For
 //go:noescape
-func For(compiler string, lookup importer.Lookup) types.Importer
+func For(compiler string, lookup importer.Lookup,) types.Importer
 
 //go:linkname ForCompiler go/importer.ForCompiler
 //go:noescape
-func ForCompiler(fset *token.FileSet, compiler string, lookup importer.Lookup) types.Importer
+func ForCompiler(fset *token.FileSet, compiler string, lookup importer.Lookup,) types.Importer

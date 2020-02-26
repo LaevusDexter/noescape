@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/antchfx/htmlquery"
 	"go/ast"
-	"go/format"
 	"go/parser"
 	"go/printer"
 	"go/token"
@@ -24,6 +23,7 @@ import (
 // 2) optimize the code (?)
 // 3) add wrapped types for methods
 // 4) figure out what causes "image" package errors
+// 5) figure out why does comma appear after function parameters
 
 const pkgLink = "https://golang.org/pkg/"
 
@@ -47,7 +47,6 @@ var buildins = []string{
 	"unsafe",
 	"syscall",
 	"js",
-	"maphash",
 	"syslog",
 	"testing",
 }
@@ -57,13 +56,15 @@ var filter = []string{
 	"image",
 }
 
-var versionFilter = []string {
+// versionFilter
+var _ = []string {
 	"tls", // 1.14
 	"json", // 1.14
 	"dwarf", // 1.14
 	"textproto", // 1.14
 	"strconv", // 1.14
 	"http", // 1.14
+	"maphash", // 1.14
 }
 
 func main() {
@@ -151,7 +152,7 @@ func main() {
 
 		if len(funcs) > 0 {
 			wg.Add(1)
-			generate(funcs, p, &wg)
+			go generate(funcs, p, &wg)
 		}
 	}
 	
@@ -258,7 +259,7 @@ func generate(funcIn []string, p pkg, wg *sync.WaitGroup) {
 		}
 
 		var params []string
-		for _, f := range fn.Type.Params.List {
+		for i, f := range fn.Type.Params.List {
 			cursor := 0
 			lookupType(&cursor, func(cur int, typ, pkg string, ext bool) {
 				if ext {
@@ -266,6 +267,16 @@ func generate(funcIn []string, p pkg, wg *sync.WaitGroup) {
 				}
 			}, f.Type)
 
+			if i == len(fn.Type.Params.List) - 1 && len(f.Names) == 1 {
+				var buf []byte
+				buildType(&buf, f.Type)
+
+				if len(buf) > 3 && buf[0] == '.' && buf[1] == '.' && buf[2] == '.' {
+					params = append(params, f.Names[0].Name + "...")
+
+					continue
+				}
+			}
 
 			for _, n := range f.Names {
 				params = append(params, n.Name)
@@ -399,17 +410,34 @@ func generate(funcIn []string, p pkg, wg *sync.WaitGroup) {
 					}
 				}, rsts.Type)
 
+
+				var buf []byte
+				if len(rsts.Names) > 1 && len(fn.Results.List) == 1 {
+					buf = append(buf, '(')
+				}
+
 				for c := len(rsts.Names)-1; c > 0; c-- {
-					ftyp = append(ftyp, ", "...)
-					ftyp = append(ftyp, ftyp...)
+					buf = append(buf, ftyp...)
+					buf = append(buf, ", "...)
+					/*rsts := *rsts
+					rsts.Type = ast.NewIdent(string(ftyp))
+					rsts.Names = nil
+
+					fn.Results.List = append(fn.Results.List[:i], append([]*ast.Field{
+						&rsts,
+					}, fn.Results.List[i:]...)...)*/
 				}
 
 				if len(rsts.Names) > 1 {
-					fn.Results.List[i].Type = ast.NewIdent(string(ftyp))
+					buf = append(buf, ftyp...)
+					if len(fn.Results.List) == 1 {
+						buf = append(buf, ')')
+					}
+
+					fn.Results.List[i].Type = ast.NewIdent(string(buf))
 				}
 
-
-				fn.Results.List[i].Names = nil
+				rsts.Names = nil
 			}
 		}
 
@@ -423,22 +451,16 @@ func generate(funcIn []string, p pkg, wg *sync.WaitGroup) {
 		astutil.AddNamedImport(fset, f, "_", pimp)
 	}
 
+	ast.SortImports(fset, f)
+
 	var buf bytes.Buffer
 
-	if err := format.Node(&buf, fset, n); err != nil {
-		// for debugging, Fprint does not complain much, except in case of "image" package
-		config := printer.Config{Mode: printer.UseSpaces | printer.TabIndent, Tabwidth: 8}
-		err2 := config.Fprint(&buf, fset, n)
-		if err2 != nil {
+	config := printer.Config{Mode: printer.UseSpaces | printer.TabIndent, Tabwidth: 8}
+	err2 := config.Fprint(&buf, fset, n)
+	if err2 != nil {
 
-			panic(p.path + err2.Error())
-		}
-
-		fmt.Println(buf.String())
-
-		panic(err)
+		panic(p.path + err2.Error())
 	}
-
 
 	path := currentDir + "/" + p.path
 	err = os.MkdirAll(path, os.ModePerm)

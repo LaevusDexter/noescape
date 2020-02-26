@@ -1,4 +1,4 @@
-// This file has automatically been generated on Wed Feb 26 02:10:00 +05 2020.
+// This file has automatically been generated on Wed Feb 26 15:50:38 +05 2020.
 // DO NOT EDIT.
 package gif
 
@@ -19,11 +19,11 @@ func DecodeConfig(r io.Reader) (image.Config, error)
 
 //go:linkname Encode image/gif.Encode
 //go:noescape
-func Encode(w io.Writer, m image.Image, o *gif.Options) error
+func Encode(w io.Writer, m image.Image, o *gif.Options,) error
 
 //go:linkname EncodeAll image/gif.EncodeAll
 //go:noescape
-func EncodeAll(w io.Writer, g *gif.GIF) error
+func EncodeAll(w io.Writer, g *gif.GIF,) error
 
 //go:linkname DecodeAll image/gif.DecodeAll
 //go:noescape

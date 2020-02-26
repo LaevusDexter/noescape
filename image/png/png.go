@@ -1,4 +1,4 @@
-// This file has automatically been generated on Wed Feb 26 02:10:01 +05 2020.
+// This file has automatically been generated on Wed Feb 26 15:50:38 +05 2020.
 // DO NOT EDIT.
 package png
 
@@ -8,10 +8,6 @@ import (
 	"io"
 	_ "unsafe"
 )
-
-//go:linkname Decode image/png.Decode
-//go:noescape
-func Decode(r io.Reader) (image.Image, error)
 
 //go:linkname DecodeConfig image/png.DecodeConfig
 //go:noescape
@@ -31,19 +27,23 @@ func encoderencode(enc *png.Encoder, w io.Writer, m image.Image) error {
 func EncoderEncode(enc *png.Encoder, w io.Writer, m image.Image) error
 
 //go:linkname formaterrorerror png.sub_formaterrorerror
-func formaterrorerror(e png.FormatError) string {
+func formaterrorerror(e png.FormatError,) string {
 	return e.Error()
 }
 
 //go:linkname FormatErrorError png.sub_formaterrorerror
 //go:noescape
-func FormatErrorError(e png.FormatError) string
+func FormatErrorError(e png.FormatError,) string
 
 //go:linkname unsupportederrorerror png.sub_unsupportederrorerror
-func unsupportederrorerror(e png.UnsupportedError) string {
+func unsupportederrorerror(e png.UnsupportedError,) string {
 	return e.Error()
 }
 
 //go:linkname UnsupportedErrorError png.sub_unsupportederrorerror
 //go:noescape
-func UnsupportedErrorError(e png.UnsupportedError) string
+func UnsupportedErrorError(e png.UnsupportedError,) string
+
+//go:linkname Decode image/png.Decode
+//go:noescape
+func Decode(r io.Reader) (image.Image, error)

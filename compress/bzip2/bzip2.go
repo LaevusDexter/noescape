@@ -1,4 +1,4 @@
-// This file has automatically been generated on Wed Feb 26 02:09:41 +05 2020.
+// This file has automatically been generated on Wed Feb 26 15:50:18 +05 2020.
 // DO NOT EDIT.
 package bzip2
 
@@ -13,10 +13,10 @@ import (
 func NewReader(r io.Reader) io.Reader
 
 //go:linkname structuralerrorerror bzip2.sub_structuralerrorerror
-func structuralerrorerror(s bzip2.StructuralError) string {
+func structuralerrorerror(s bzip2.StructuralError,) string {
 	return s.Error()
 }
 
 //go:linkname StructuralErrorError bzip2.sub_structuralerrorerror
 //go:noescape
-func StructuralErrorError(s bzip2.StructuralError) string
+func StructuralErrorError(s bzip2.StructuralError,) string

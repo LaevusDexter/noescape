@@ -1,4 +1,4 @@
-// This file has automatically been generated on Wed Feb 26 02:10:04 +05 2020.
+// This file has automatically been generated on Wed Feb 26 15:50:42 +05 2020.
 // DO NOT EDIT.
 package mime
 
@@ -6,26 +6,6 @@ import (
 	"mime"
 	_ "unsafe"
 )
-
-//go:linkname AddExtensionType mime.AddExtensionType
-//go:noescape
-func AddExtensionType(ext, typ string) error
-
-//go:linkname ExtensionsByType mime.ExtensionsByType
-//go:noescape
-func ExtensionsByType(typ string) ([]string, error)
-
-//go:linkname FormatMediaType mime.FormatMediaType
-//go:noescape
-func FormatMediaType(t string, param map[string]string) string
-
-//go:linkname ParseMediaType mime.ParseMediaType
-//go:noescape
-func ParseMediaType(v string) (string, map[string]string, error)
-
-//go:linkname TypeByExtension mime.TypeByExtension
-//go:noescape
-func TypeByExtension(ext string) string
 
 //go:linkname worddecoderdecode mime.sub_worddecoderdecode
 func worddecoderdecode(d *mime.WordDecoder, word string) (string, error) {
@@ -53,3 +33,23 @@ func wordencoderencode(e mime.WordEncoder, charset, s string) string {
 //go:linkname WordEncoderEncode mime.sub_wordencoderencode
 //go:noescape
 func WordEncoderEncode(e mime.WordEncoder, charset, s string) string
+
+//go:linkname AddExtensionType mime.AddExtensionType
+//go:noescape
+func AddExtensionType(ext, typ string) error
+
+//go:linkname ExtensionsByType mime.ExtensionsByType
+//go:noescape
+func ExtensionsByType(typ string) ([]string, error)
+
+//go:linkname FormatMediaType mime.FormatMediaType
+//go:noescape
+func FormatMediaType(t string, param map[string]string) string
+
+//go:linkname ParseMediaType mime.ParseMediaType
+//go:noescape
+func ParseMediaType(v string) (string, map[string]string, error)
+
+//go:linkname TypeByExtension mime.TypeByExtension
+//go:noescape
+func TypeByExtension(ext string) string
