@@ -7,6 +7,6 @@ Note that the entire code is auto-generated and may contain some (style/signatur
 --------
 ## get
 ```
-go get github.com/LaevusDexter/noescape
+go get github.com/LaevusDexter/noescape/<package>
 ```
 --------
