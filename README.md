@@ -5,7 +5,7 @@ noescape
 Note that the entire code is auto-generated and may contain some (style/signature) mistakes.
 
 --------
-##get
+## get
 ```
 go get github.com/LaevusDexter/noescape
 ```
